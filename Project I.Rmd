@@ -1,0 +1,128 @@
+---
+title: "STA137 Project I"
+author:
+- Junyao Lu
+- SID:915938649
+date: "28/10/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+\clearpage
+
+
+```{r, echo = TRUE}
+data = read.csv("temperature.csv")
+df = ts(data, frequency = 12, start = c(1964, 1))
+```
+
+## (a)
+```{r, echo = TRUE}
+plot(df, main = "Plot for Average Monthly Temperature (January 1964 - December 1975)")
+```
+
+
+From the plot above, there is not trend observed. However, the plot shows a seasonal pattern in the data, which roughly repeats every year.
+
+
+
+## (b)
+```{r, echo = TRUE}
+M = factor(cycle(df))
+reg1 = lm(df ~ 0 + M, na.action=NULL)
+summary(reg1)
+```
+
+
+
+### (i)
+```{r, echo = TRUE}
+diff = vector()
+for (i in 1:11){
+  diff = c(diff, reg1$coefficients[[i+1]] - reg1$coefficients[[i]])
+}
+diff
+```
+
+
+The average temperature increases by 4.041667 from January to February; 
+The average temperature increases by 11.825000 from February to March; 
+The average temperature increases by 14.050000 from March to April; 
+The average temperature increases by 11.566667 from April to May; 
+The average temperature increases by 9.408333 from May to June; 
+The average temperature increases by 4.216667 from June to July; 
+The average temperature decreases by 2.383333 from July to August; 
+The average temperature decreases by 8.308333 from August to September; 
+The average temperature decreases by 10.050000 from September to October; 
+The average temperature decreases by 14.325000 from October to November; 
+The average temperature decreases by 13.008333 from November to December.
+
+
+
+### (ii)
+```{r, echo = TRUE}
+par(mfrow=c(1,2))
+plot(df, main="plot of data and fitted value")
+lines(fitted(reg1), col="red")
+plot(df-fitted(reg1), main="plot of residuals")
+par(mfrow=c(1,1))
+acf(df-fitted(reg1))
+```
+
+
+From the plots above, it appears that the model fits the data well and the residuals look white. The plot of data and the plot of fitted values match with each other very well and the residuals seem to be random and ACF drops immediately from 1 to 0.
+
+
+
+## (c)
+```{r, echo = TRUE}
+sincos = vector()
+t = 1:144
+for(k in 1:6){
+  sincos = cbind(sincos, cos(2*pi*k*t*1/12), sin(2*pi*k*t*1/12))
+}
+sincos = as.data.frame(sincos)
+names(sincos) = c("cos1", "sin1", "cos2", "sin2",
+                  "cos3", "sin3", "cos4", "sin4", "cos5", "sin5",
+                  "cos6", "sin6")
+
+reg2 = lm(df~sincos$cos1+sincos$sin1+sincos$cos2+sincos$sin2
+          +sincos$cos3+sincos$sin3+sincos$cos4+sincos$sin4
+          +sincos$cos5+sincos$sin5+sincos$cos6+sincos$sin6, na.action=NULL)
+summary(reg2)
+```
+
+
+
+### (i)
+The significant frequency is f = 1/12. It takes 12 months for the time series to repeat itself.
+
+
+
+### (ii)
+```{r, echo = TRUE}
+par(mfrow=c(1,1))
+plot(df, main="plot of data and fitted value")
+lines(fitted(reg2), col="red")
+```
+
+
+
+### (iii)
+```{r, echo = TRUE}
+plot(df-fitted(reg2), main="plot of residuals")
+acf(df-fitted(reg2))
+```
+
+From the plots above, it appears that the model fits the data well and the residuals look white. However, it appears that the residuals are not a sample from a Normal distribution, because there is not any trend shown in the plot of residuals.
+
+
+\clearpage
+## Code Appendix
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+
+
